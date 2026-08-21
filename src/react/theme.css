@@ -1,0 +1,28 @@
+/**
+ * Tema por defecto del copiloto.
+ *
+ * El paquete pinta todo con estas variables, así que cada sistema mapea las
+ * suyas y la interfaz queda con su marca sin tocar el componente. Importalo una
+ * vez en el CSS global, o definí las variables vos mismo apuntando a tus tokens:
+ *
+ *   :root {
+ *     --copilot-primary: var(--color-mi-primario);
+ *     ...
+ *   }
+ */
+:root {
+  --copilot-primary: #1a3a2a;
+  --copilot-primary-light: #e8f0ec;
+  --copilot-bg: #fafaf9;
+  --copilot-surface: #ffffff;
+  --copilot-surface-hover: #f5f5f4;
+  --copilot-border: #e7e5e4;
+  --copilot-border-subtle: #f0eeec;
+  --copilot-text: #1c1917;
+  --copilot-text-secondary: #78716c;
+  --copilot-text-tertiary: #a8a29e;
+  --copilot-success: #16a34a;
+  --copilot-danger: #dc2626;
+  /* Altura de la barra inferior en mobile, si el sistema tiene una. */
+  --copilot-bottom-nav-h: 0px;
+}

@@ -1,0 +1,41 @@
+{
+  "name": "@fa/copilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Copiloto de ayuda in-app: chat que explica cómo se usa un sistema, con el manual en dos niveles.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server/index.ts",
+    "./react": "./src/react/index.ts",
+    "./build": "./src/build/index.ts",
+    "./storage/supabase": "./src/storage/supabase.ts",
+    "./theme.css": "./src/react/theme.css"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "peerDependencies": {
+    "@anthropic-ai/sdk": ">=0.80.0",
+    "lucide-react": ">=0.5.0",
+    "react": ">=19",
+    "zod": ">=4"
+  },
+  "peerDependenciesMeta": {
+    "lucide-react": {
+      "optional": false
+    },
+    "react": {
+      "optional": false
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/filosofia-animal/fa-copilot.git"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}
