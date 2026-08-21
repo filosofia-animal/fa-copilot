@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
 import { ThumbsUp, ThumbsDown, Baby } from "lucide-react";
 import type { ChatMessage } from "./use-chat";
 
@@ -104,7 +104,15 @@ export function HelpMessageBubble({
   /** La acción del host que persiste el voto. */
   submitFeedback: (usageId: string, value: 1 | -1) => Promise<unknown>;
 }) {
-  const [isPending, startTransition] = useTransition();
+  /**
+   * Un booleano y no `useTransition`: el voto es una petición asíncrona, no una
+   * transición de UI. Envolver un `async` en `startTransition` sólo funciona
+   * como uno espera desde React 19 — en 18 `isPending` vuelve a false en el
+   * primer `await`, así que el botón se rehabilitaba mientras el voto todavía
+   * estaba guardándose y se podía votar dos veces. Con esto el paquete anda
+   * igual en las dos versiones.
+   */
+  const [isSaving, setIsSaving] = useState(false);
 
   if (message.role === "user") {
     return (
@@ -117,12 +125,13 @@ export function HelpMessageBubble({
   }
 
   function vote(value: 1 | -1) {
-    if (!message.usageId || isPending || message.feedback) return;
+    if (!message.usageId || isSaving || message.feedback) return;
     const usageId = message.usageId;
+    // El voto se pinta al instante y se persiste detrás: si falla, el panel no
+    // es el lugar para pelearlo.
     onFeedback(usageId, value);
-    startTransition(async () => {
-      await submitFeedback(usageId, value);
-    });
+    setIsSaving(true);
+    void submitFeedback(usageId, value).finally(() => setIsSaving(false));
   }
 
   return (
@@ -136,7 +145,7 @@ export function HelpMessageBubble({
           <button
             type="button"
             onClick={() => vote(1)}
-            disabled={!!message.feedback || isPending}
+            disabled={!!message.feedback || isSaving}
             aria-label="Respuesta útil"
             className={cn(
               "rounded p-1 text-[var(--copilot-text-tertiary)] transition-colors hover:bg-[var(--copilot-surface-hover)] hover:text-[var(--copilot-success)] disabled:cursor-default",
@@ -148,7 +157,7 @@ export function HelpMessageBubble({
           <button
             type="button"
             onClick={() => vote(-1)}
-            disabled={!!message.feedback || isPending}
+            disabled={!!message.feedback || isSaving}
             aria-label="Respuesta incorrecta"
             className={cn(
               "rounded p-1 text-[var(--copilot-text-tertiary)] transition-colors hover:bg-[var(--copilot-surface-hover)] hover:text-[var(--copilot-danger)] disabled:cursor-default",

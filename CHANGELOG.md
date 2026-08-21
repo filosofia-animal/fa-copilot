@@ -4,6 +4,21 @@ Versionado semántico. Cada versión es un tag en el repo; los sistemas apuntan 
 un tag, no a una rama — así una mejora del copiloto nunca se cuela en un deploy
 de otro sistema sin que alguien lo decida.
 
+## 0.2.0
+
+Compatibilidad con React 18, para poder instalarse en sistemas que todavía no
+migraron. El rango de `peerDependencies` pasa de `>=19` a `>=18`.
+
+El cambio no fue sólo aflojar el rango: el voto de una respuesta envolvía una
+función `async` en `startTransition`, y eso sólo se comporta como uno espera
+desde React 19. En 18, `isPending` vuelve a `false` en el primer `await`, así que
+el botón se rehabilitaba mientras el voto todavía se estaba guardando y se podía
+votar dos veces. Ahora es un booleano de estado, que además describe mejor lo que
+pasa: es una petición asíncrona, no una transición de UI.
+
+Verificado con typecheck contra React 18.3.1 y contra 19.2.x. El resto del
+paquete ya era compatible: los hooks que usa existen desde React 18.
+
 ## 0.1.1
 
 El paquete pasa a tener CI propio: typecheck, lint y 60 tests sobre un corpus de

@@ -1,6 +1,6 @@
 {
   "name": "@fa/copilot",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "description": "Copiloto de ayuda in-app: chat que explica cómo se usa un sistema, con el manual en dos niveles.",
   "type": "module",
@@ -25,7 +25,7 @@
   "peerDependencies": {
     "@anthropic-ai/sdk": ">=0.80.0",
     "lucide-react": ">=0.5.0",
-    "react": ">=19",
+    "react": ">=18",
     "zod": ">=4"
   },
   "peerDependenciesMeta": {
