@@ -15,7 +15,7 @@
  * bundler.
  */
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import type { CopilotSection } from "../types";
 
 /** Archivos que NO forman parte del corpus que ve el modelo. */

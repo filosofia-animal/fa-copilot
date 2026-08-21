@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 /**
  * Dictado por voz usando el reconocimiento de voz del navegador.
@@ -46,8 +46,18 @@ function getRecognitionCtor(): SpeechRecognitionCtor | null {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
+/**
+ * El soporte de dictado no cambia en toda la vida de la página, pero no se puede
+ * saber en el servidor. `useSyncExternalStore` devuelve `false` en el render del
+ * servidor y en la hidratación, y el valor real del navegador en cuanto puede,
+ * sin encadenar un render con `setState` en un efecto.
+ */
+const NO_CAMBIA = () => () => {};
+const soportaDictado = () => getRecognitionCtor() !== null;
+const enElServidorNo = () => false;
+
 export function useDictation(onText: (text: string) => void) {
-  const [isSupported, setIsSupported] = useState(false);
+  const isSupported = useSyncExternalStore(NO_CAMBIA, soportaDictado, enElServidorNo);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   // El callback vive en una ref para no recrear el reconocedor en cada render.
@@ -56,10 +66,6 @@ export function useDictation(onText: (text: string) => void) {
   useEffect(() => {
     onTextRef.current = onText;
   }, [onText]);
-
-  useEffect(() => {
-    setIsSupported(getRecognitionCtor() !== null);
-  }, []);
 
   const stop = useCallback(() => {
     recognitionRef.current?.stop();

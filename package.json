@@ -1,6 +1,6 @@
 {
   "name": "@fa/copilot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Copiloto de ayuda in-app: chat que explica cómo se usa un sistema, con el manual en dos niveles.",
   "type": "module",
@@ -17,6 +17,11 @@
     "README.md",
     "CHANGELOG.md"
   ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
   "peerDependencies": {
     "@anthropic-ai/sdk": ">=0.80.0",
     "lucide-react": ">=0.5.0",
@@ -30,6 +35,20 @@
     "react": {
       "optional": false
     }
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.14",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.1.0",
+    "lucide-react": "^0.577.0",
+    "react": "^19.2.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.47.0",
+    "vitest": "^4.1.0",
+    "zod": "^4.3.6"
   },
   "repository": {
     "type": "git",

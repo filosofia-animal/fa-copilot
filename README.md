@@ -95,3 +95,30 @@ que cuesta cada parte y con qué se equivoca uno.
   request.
 - No abre más de dos secciones por consulta, y en la última ronda se le sacan
   las herramientas. Es el techo de costo por consulta.
+
+## Desarrollo
+
+```bash
+npm ci
+npm run typecheck
+npm run lint
+npm test
+```
+
+Los tests corren contra un corpus de prueba (`tests/fixtures/corpus.ts`), no
+contra el manual de ningún sistema: el paquete tiene que poder verificarse solo.
+Si un test necesita contenido de un manual real, ese test va en el repo del
+sistema, no acá.
+
+Las tres cosas que conviene no romper, porque fallan en silencio:
+
+- **El system prompt es determinista.** El caché de Anthropic matchea por
+  prefijo byte a byte. Una fecha o un id ahí adentro multiplica el costo por
+  cinco sin que nada falle.
+- **El cuerpo de las secciones no va al prompt.** Es lo que hace que el corpus
+  pueda crecer sin que crezca el costo por consulta.
+- **Las reglas de accesibilidad del prompt.** Son la diferencia entre una
+  herramienta que la gente usa y una que abandona; se borran fácil al editar.
+
+Hay un test para cada una. Si alguno falla, el arreglo va en el código, no en el
+test.

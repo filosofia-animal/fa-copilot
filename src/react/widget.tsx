@@ -13,6 +13,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useCopilotChat } from "./use-chat";
+import { useStoredNumber } from "./use-stored-number";
 import { useDictation } from "./use-dictation";
 import { HelpMessageBubble } from "./message";
 
@@ -73,7 +74,12 @@ export function CopilotWidget({
 }: CopilotWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [fontSize, setFontSize] = useState<number>(FONT_SIZES[0]);
+  // El tamaño elegido se recuerda: quien lo necesita grande lo necesita siempre.
+  const [fontSize, setFontSize] = useStoredNumber(
+    FONT_SIZE_STORAGE_KEY,
+    FONT_SIZES,
+    FONT_SIZES[0]
+  );
   const { messages, isStreaming, lookingUp, error, send, reset, markFeedback } =
     useCopilotChat({ endpoint, pathname });
 
@@ -96,32 +102,14 @@ export function CopilotWidget({
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
-  // El tamaño elegido se recuerda: quien lo necesita grande lo necesita siempre.
-  // La lectura va post-mount para no romper la hidratación, igual que el estado
-  // colapsado del sidebar y el tour de onboarding.
-  useEffect(() => {
-    try {
-      const saved = Number(window.localStorage.getItem(FONT_SIZE_STORAGE_KEY));
-      if (FONT_SIZES.includes(saved as (typeof FONT_SIZES)[number])) {
-        setFontSize(saved);
-      }
-    } catch {
-      /* sin localStorage: queda el default */
-    }
-  }, []);
-
   function changeFontSize(direction: 1 | -1) {
     const index = FONT_SIZES.indexOf(
       fontSize as (typeof FONT_SIZES)[number]
     );
     const next = FONT_SIZES[index + direction];
     if (next === undefined) return;
+    // El hook persiste solo; acá no hay que volver a escribir.
     setFontSize(next);
-    try {
-      window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, String(next));
-    } catch {
-      /* ignorar */
-    }
   }
 
   // Escape cierra el panel, como el resto de los overlays de la app.
