@@ -120,6 +120,18 @@ describe("extracción de etiquetas de la interfaz", () => {
     expect(extractUiLabels([srcDir]).has("Archivo")).toBe(true);
   });
 
+  it("encuentra etiquetas escritas con comilla simple", () => {
+    // Cada repo tiene su estilo de comillas y prettier lo impone. En uno que usa
+    // simple, mirar sólo la doble no extrae NADA: la guarda pasa a dar falsos
+    // positivos en masa en vez de proteger.
+    const { srcDir } = repoDePrueba();
+    writeFileSync(
+      join(srcDir, "nav-simple.ts"),
+      "export const NAV = [{ label: 'Configuración', href: '/config' }];\n"
+    );
+    expect(extractUiLabels([srcDir]).has("Configuración")).toBe(true);
+  });
+
   it("no devuelve ruido ni cadenas vacías", () => {
     const { srcDir } = repoDePrueba();
     for (const label of extractUiLabels([srcDir])) {

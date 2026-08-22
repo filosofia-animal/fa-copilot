@@ -34,13 +34,16 @@ function walk(dir: string): string[] {
  */
 const PATTERNS: RegExp[] = [
   />([^<>{}\n]{2,60})</g,
-  /placeholder="([^"]{2,60})"/g,
-  /aria-label="([^"]{2,60})"/g,
-  /title="([^"]{2,60})"/g,
+  // Los atributos van con comilla doble o simple: cada repo tiene su estilo, y
+  // en los que usan comilla simple esto es la diferencia entre extraer las
+  // etiquetas y no extraer ninguna.
+  /placeholder=["']([^"']{2,60})["']/g,
+  /aria-label=["']([^"']{2,60})["']/g,
+  /title=["']([^"']{2,60})["']/g,
   // Etiquetas declaradas en objetos de configuración en vez de JSX — la
   // navegación del sidebar es el caso principal, y es justo lo que más cita el
   // manual ("hacé clic en Accionables, en el menú de la izquierda").
-  /\blabel:\s*"([^"]{2,60})"/g,
+  /\blabel:\s*["']([^"']{2,60})["']/g,
 ];
 
 export function extractUiLabels(dirs: string[]): Set<string> {

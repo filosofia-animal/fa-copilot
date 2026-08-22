@@ -4,6 +4,18 @@ Versionado semántico. Cada versión es un tag en el repo; los sistemas apuntan 
 un tag, no a una rama — así una mejora del copiloto nunca se cuela en un deploy
 de otro sistema sin que alguien lo decida.
 
+## 0.2.1
+
+La extracción de etiquetas de la interfaz reconoce comilla simple además de
+doble, en los atributos y en las etiquetas declaradas en objetos de
+configuración.
+
+No es cosmético: cada repo impone su estilo de comillas con prettier, y en uno
+que usa simple la extracción no encontraba **ninguna** etiqueta. La guarda de
+"botones vivos" seguía corriendo y seguía pasando en verde, pero verificando
+contra un conjunto vacío — el peor modo de falla posible para una guarda, porque
+parece estar cuidando algo y no cuida nada.
+
 ## 0.2.0
 
 Compatibilidad con React 18, para poder instalarse en sistemas que todavía no
