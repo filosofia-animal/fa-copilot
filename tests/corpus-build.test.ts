@@ -132,6 +132,27 @@ describe("extracción de etiquetas de la interfaz", () => {
     expect(extractUiLabels([srcDir]).has("Configuración")).toBe(true);
   });
 
+  it("encuentra el texto de un botón partido en varias líneas", () => {
+    // prettier manda el contenido a su propia línea en cuanto la línea se pasa
+    // de largo, y así queda la mayoría de los botones de un repo real. Buscando
+    // sólo dentro de una línea no se encuentra NINGUNO, y la guarda pasa a
+    // verificar contra un conjunto vacío sin que nada falle.
+    const { srcDir } = repoDePrueba();
+    writeFileSync(
+      join(srcDir, "boton-largo.tsx"),
+      [
+        "export function B() {",
+        "  return (",
+        '    <Link href="/admin/cursos/nuevo" className={faButtonClasses("community", "md")}>',
+        "      + Nuevo curso",
+        "    </Link>",
+        "  );",
+        "}",
+      ].join("\n")
+    );
+    expect(extractUiLabels([srcDir]).has("+ Nuevo curso")).toBe(true);
+  });
+
   it("no devuelve ruido ni cadenas vacías", () => {
     const { srcDir } = repoDePrueba();
     for (const label of extractUiLabels([srcDir])) {

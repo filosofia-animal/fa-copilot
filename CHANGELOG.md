@@ -4,6 +4,25 @@ Versionado semántico. Cada versión es un tag en el repo; los sistemas apuntan 
 un tag, no a una rama — así una mejora del copiloto nunca se cuela en un deploy
 de otro sistema sin que alguien lo decida.
 
+## 0.2.2
+
+La extracción de etiquetas encuentra el texto de un botón partido en varias
+líneas. Antes sólo miraba dentro de una línea, y prettier manda el contenido a su
+propia línea en cuanto la línea se pasa de largo — que es como queda la mayoría de
+los botones de un repo real:
+
+```jsx
+<Link href="/admin/cursos/nuevo" className={faButtonClasses('community', 'md')}>
+  + Nuevo curso
+</Link>
+```
+
+En fa-ventas la mayoría de los botones cabían en una línea y por eso no se notó.
+En el segundo sistema no se encontraba **ninguno**, y la guarda de botones vivos
+seguía en verde comparando contra un conjunto vacío. Es la segunda vez que este
+extractor falla del mismo modo —callado y en verde—, así que ahora hay un test
+para cada forma.
+
 ## 0.2.1
 
 La extracción de etiquetas de la interfaz reconoce comilla simple además de

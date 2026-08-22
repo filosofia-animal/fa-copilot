@@ -1,6 +1,6 @@
 {
   "name": "@fa/copilot",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "Copiloto de ayuda in-app: chat que explica cómo se usa un sistema, con el manual en dos niveles.",
   "type": "module",

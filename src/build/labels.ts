@@ -33,7 +33,12 @@ function walk(dir: string): string[] {
  * usuario llega a leer (placeholder, aria-label, title).
  */
 const PATTERNS: RegExp[] = [
-  />([^<>{}\n]{2,60})</g,
+  // El texto visible de una etiqueta JSX. Los saltos de línea entran a
+  // propósito: prettier pone el contenido de un botón en su propia línea en
+  // cuanto la línea se pasa de largo, y buscando sólo en una línea no se
+  // encuentra NADA en un repo formateado así. Como la clase excluye < y >, el
+  // match no puede cruzar una etiqueta: es exactamente el nodo de texto.
+  />([^<>{}]{2,80})</g,
   // Los atributos van con comilla doble o simple: cada repo tiene su estilo, y
   // en los que usan comilla simple esto es la diferencia entre extraer las
   // etiquetas y no extraer ninguna.
@@ -55,7 +60,9 @@ export function extractUiLabels(dirs: string[]): Set<string> {
       const source = readFileSync(file, "utf8");
       for (const pattern of PATTERNS) {
         for (const match of source.matchAll(pattern)) {
-          const text = match[1].trim();
+          // Colapsa la sangría y los saltos que quedan dentro del nodo de texto:
+          // "\n            + Nuevo curso\n          " es "+ Nuevo curso".
+          const text = match[1].replace(/\s+/g, " ").trim();
           // Ruido típico del JSX: fragmentos de clases, entidades, símbolos.
           if (!text || text.length < 2) continue;
           if (/^[\s\d.,:;/|·—–-]+$/.test(text)) continue;
