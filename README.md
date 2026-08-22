@@ -17,10 +17,54 @@ Se instala como dependencia git, apuntando a un tag:
 Se distribuye como TypeScript sin compilar, así que el consumidor necesita
 `transpilePackages: ["@fa/copilot"]` en su `next.config.ts`.
 
-Y como este repo es privado, `npm ci` necesita credenciales para clonarlo:
+## Tailwind tiene que escanear el paquete
 
-- **Vercel**: darle acceso a este repo a su app de GitHub. No hay token que
-  guardar ni rotar.
+El paquete **no trae CSS**: el widget se pinta con clases de Tailwind y las
+genera el Tailwind del sistema que lo monta. Tailwind ignora `node_modules` por
+diseño, así que hay que declararlo a mano en el CSS global:
+
+```css
+@import "tailwindcss";
+@source "../node_modules/@fa/copilot/src";
+```
+
+La ruta es relativa al archivo CSS. En Tailwind 3 el equivalente va en
+`tailwind.config`, sumando `"./node_modules/@fa/copilot/src/**/*.{ts,tsx}"` a
+`content`.
+
+Sin esa línea no falla nada: `npm ci` pasa, el build pasa, los tipos pasan, el
+widget monta y responde. Sale sin una sola de sus clases y el panel queda
+desarmado sobre la pantalla — a pantalla completa, transparente y encima del
+contenido. Y no se ve crudo sino a medio estilar, porque las clases genéricas que
+el sistema ya usa en otro lado (`flex`, `border`, `rounded-full`) existen igual:
+lo que falta es todo lo propio del widget, que son valores arbitrarios y
+variantes `sm:` que no aparecen en ningún otro archivo del repo consumidor. Por
+eso el síntoma manda a buscar el problema al componente y no al CSS.
+
+Le pasó a fa-ventas en staging, justo al migrar el copiloto a este repo: mientras
+el paquete vivió en `packages/` la detección automática de Tailwind lo alcanzaba
+y nadie tuvo que declarar nada. El olvido aparece recién al consumirlo desde acá,
+que es el único camino que existe hoy.
+
+Conviene copiar la guarda de fa-ventas (`tests/unit/help-widget-styles.test.ts`):
+compila el CSS global de verdad y exige que las clases del paquete salgan del
+otro lado. Un detalle que no es obvio — las clases se leen del paquete instalado,
+nunca se escriben en el test: Tailwind escanea también ese archivo, así que una
+clase copiada como literal se generaría desde el propio test y la guarda pasaría
+en verde con el `@source` borrado.
+
+## Credenciales para clonar el repo
+
+Como este repo es privado, `npm ci` necesita credenciales. Y quien clona es
+**npm**, con la URL del `package-lock` y por su cuenta: no interviene la app de
+GitHub del hosting. Van dos caminos distintos con dos credenciales, y verde en
+uno no dice nada del otro.
+
+- **Vercel**: **no alcanza** con darle acceso a este repo a la app de GitHub de
+  Vercel — esa app le sirve para clonar el repo del proyecto, no para lo que hace
+  npm después. Hace falta un token de lectura en una variable de entorno del
+  proyecto (Production, Preview y Development) y un `installCommand` que lo
+  configure antes de instalar. Ver `scripts/vercel-install.sh` en fa-ventas.
 - **GitHub Actions**: el `GITHUB_TOKEN` que Actions inyecta sirve sólo para el
   repo donde corre, así que hace falta un token de lectura como secreto de
   organización y una línea antes de `npm ci`:
@@ -29,6 +73,12 @@ Y como este repo es privado, `npm ci` necesita credenciales para clonarlo:
   - run: git config --global url."https://x-access-token:${{ secrets.FA_COPILOT_TOKEN }}@github.com/".insteadOf "https://github.com/"
   - run: npm ci
   ```
+
+  Dos trampas más: `actions/checkout` deja una cabecera de autorización en
+  `.git/config` que le gana a la credencial de la URL, así que va con
+  `persist-credentials: false`. Y npm normaliza la dependencia a `ssh://` en el
+  `package-lock` sin importar cómo esté escrita en el `package.json`: si se
+  reescribe sólo la forma `https`, el `insteadOf` no matchea nada y falla igual.
 
   Sin eso el build falla con un error de git que parece de red y no dice qué
   falta. Es lo primero que se rompe al instalar el paquete en un sistema nuevo.
@@ -81,7 +131,9 @@ que evita que el copiloto siga mandando a la gente a un botón que se renombró.
    sin arrastrar el entorno.
 5. **Endpoint.** `export const { POST, GET } = createCopilotHandler(config)`.
 6. **Widget.** `<CopilotWidget endpoint="..." submitFeedback={...} />` y mapeá
-   las variables `--copilot-*` a tus tokens de marca en el CSS global.
+   las variables `--copilot-*` a tus tokens de marca en el CSS global. Sin el
+   `@source` de más arriba el widget sale sin estilos: es el paso que más se
+   olvida y el que menos se parece a su síntoma.
 
 `docs/copiloto-replicar.md` en fa-ventas tiene el paso a paso completo, con lo
 que cuesta cada parte y con qué se equivoca uno.
