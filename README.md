@@ -11,8 +11,15 @@ tiene que escribir es el manual.**
 Se instala como dependencia git, apuntando a un tag:
 
 ```json
-"@fa/copilot": "github:filosofia-animal/fa-copilot#v0.1.0"
+"@fa/copilot": "github:filosofia-animal/fa-copilot#v0.2.2"
 ```
+
+El repo es público, así que no hace falta ninguna credencial: `npm ci` lo clona
+igual en tu máquina, en CI y en el build de Vercel. Y eso es todo lo que hay que
+escribir — el lockfile no se toca. npm guarda el `resolved` como
+`git+ssh://git@github.com/…` para toda dependencia de GitHub, sin importar cómo
+esté escrita en el `package.json`, y siendo el repo público lo resuelve por https
+igual, sin usar ninguna clave SSH.
 
 Se distribuye como TypeScript sin compilar, así que el consumidor necesita
 `transpilePackages: ["@fa/copilot"]` en su `next.config.ts`.
@@ -53,35 +60,36 @@ nunca se escriben en el test: Tailwind escanea también ese archivo, así que un
 clase copiada como literal se generaría desde el propio test y la guarda pasaría
 en verde con el `@source` borrado.
 
-## Credenciales para clonar el repo
+## No hace falta credencial
 
-Como este repo es privado, `npm ci` necesita credenciales. Y quien clona es
-**npm**, con la URL del `package-lock` y por su cuenta: no interviene la app de
-GitHub del hosting. Van dos caminos distintos con dos credenciales, y verde en
-uno no dice nada del otro.
+Este repo es **público**, y es la única razón por la que instalarlo es una línea
+en el `package.json` y nada más. Vale la pena decir qué desaparece con eso,
+porque estuvo ahí y costó: mientras fue privado, quien clonaba el paquete era
+**npm**, con la URL del lockfile y por su cuenta, sin que interviniera la app de
+GitHub del hosting. Cada sistema que lo consumía necesitaba entonces dos
+credenciales distintas —una para GitHub Actions, otra para Vercel—, y verde en
+una no decía nada de la otra. Con cuatro maneras de equivocarse que fallaban
+todas con el mismo error de git, que parece de red y no dice qué falta:
 
-- **Vercel**: **no alcanza** con darle acceso a este repo a la app de GitHub de
-  Vercel — esa app le sirve para clonar el repo del proyecto, no para lo que hace
-  npm después. Hace falta un token de lectura en una variable de entorno del
-  proyecto (Production, Preview y Development) y un `installCommand` que lo
-  configure antes de instalar. Ver `scripts/vercel-install.sh` en fa-ventas.
-- **GitHub Actions**: el `GITHUB_TOKEN` que Actions inyecta sirve sólo para el
-  repo donde corre, así que hace falta un token de lectura como secreto de
-  organización y una línea antes de `npm ci`:
+- un token de organización que vence, y el día que vence se rompen todos los
+  repos a la vez;
+- `persist-credentials: false` en cada `actions/checkout`, porque si no la
+  cabecera de autorización que deja el checkout le gana a la credencial de la
+  URL y el clone falla con "Repository not found" mientras el token figura como
+  nunca usado;
+- el `insteadOf` sobre la forma `ssh://`, porque es la que npm deja en el
+  lockfile por más que el `package.json` diga `https` — reescribir sólo la forma
+  `https` no matcheaba nada y fallaba igual, después de haber "arreglado" el
+  problema;
+- la variable de entorno en Vercel, por proyecto y en los tres entornos.
 
-  ```yaml
-  - run: git config --global url."https://x-access-token:${{ secrets.FA_COPILOT_TOKEN }}@github.com/".insteadOf "https://github.com/"
-  - run: npm ci
-  ```
+Nada de eso existe más. Si estás migrando un sistema que todavía tiene ese
+andamiaje puesto, `docs/migrar-a-publico.md` dice qué se borra y en qué orden.
 
-  Dos trampas más: `actions/checkout` deja una cabecera de autorización en
-  `.git/config` que le gana a la credencial de la URL, así que va con
-  `persist-credentials: false`. Y npm normaliza la dependencia a `ssh://` en el
-  `package-lock` sin importar cómo esté escrita en el `package.json`: si se
-  reescribe sólo la forma `https`, el `insteadOf` no matchea nada y falla igual.
-
-  Sin eso el build falla con un error de git que parece de red y no dice qué
-  falta. Es lo primero que se rompe al instalar el paquete en un sistema nuevo.
+Lo que sí sigue siendo cierto: el paquete es reusable, el manual no. Acá no vive
+contenido de ningún sistema —los tests corren contra `tests/fixtures/corpus.ts`—
+y `docs/ayuda/` es del repo que lo monta. Que este repo sea público no expone el
+manual de nadie.
 
 ## Qué trae
 

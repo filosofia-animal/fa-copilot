@@ -4,6 +4,25 @@ Versionado semántico. Cada versión es un tag en el repo; los sistemas apuntan 
 un tag, no a una rama — así una mejora del copiloto nunca se cuela en un deploy
 de otro sistema sin que alguien lo decida.
 
+## Sin publicar
+
+El repo pasa a ser **público**. No cambia una línea de código; cambia lo que
+cuesta consumirlo. Mientras fue privado, quien clonaba el paquete era npm, con la
+URL del lockfile y por su cuenta, así que cada sistema necesitaba un token de
+lectura cableado en dos lugares —GitHub Actions y Vercel—, más
+`persist-credentials: false` en cada checkout y un `insteadOf` sobre la forma
+`ssh://`. Cuatro maneras de fallar, todas con el mismo error de git que parece de
+red, y todas rompiendo el CI entero del consumidor: `npm ci` está en todos los
+jobs, así que un PR sin relación con el copiloto tampoco podía mergear.
+
+En el consumidor no hay nada que cambiar: ni la dependencia ni el lockfile. npm
+guarda el `resolved` como `git+ssh://git@github.com/…` para toda dependencia de
+GitHub y no hay forma de escribirlo distinto, pero siendo el repo público lo
+resuelve por https igual, sin usar ninguna clave. Sólo se borra el andamiaje.
+
+`docs/migrar-a-publico.md` tiene la limpieza de un consumidor que ya tenía el
+andamiaje puesto, en orden y con qué verificar en cada paso.
+
 ## 0.2.2
 
 La extracción de etiquetas encuentra el texto de un botón partido en varias
