@@ -32,29 +32,36 @@ máquina de cualquiera. Hasta que ese comando funcione, no sigas con el paso 2.
 Por sistema. `fa-ventas` es el que tiene el andamiaje completo; los que se
 montaron después pueden tener sólo una parte.
 
-### 2.1 La dependencia, a la forma `https`
+### 2.1 La dependencia: no se toca
 
-En `package.json`:
+Vale decirlo porque es contraintuitivo y porque el primer intento de esta
+migración fue cambiarla. El `package-lock.json` dice:
 
-```json
-"@fa/copilot": "git+https://github.com/filosofia-animal/fa-copilot.git#v0.2.2"
+```
+"resolved": "git+ssh://git@github.com/filosofia-animal/fa-copilot.git#<sha>"
 ```
 
-Y regenerar la entrada del lockfile:
+Eso parece que hay que arreglarlo —una URL ssh sale a buscar una clave que en CI
+no existe— y no hay nada que arreglar:
 
-```bash
-npm install
-grep -n "fa-copilot" package-lock.json
-```
+- npm normaliza el `resolved` a la forma `ssh` para **toda** dependencia de
+  GitHub, sin importar cómo esté escrita en el `package.json`. Escribirla como
+  `git+https://…` no cambia el lockfile: probado, npm la vuelve a escribir en
+  `ssh`.
+- Y no importa, porque siendo el repo público npm la resuelve por https de todos
+  modos. Verificado con npm 10 en un entorno sin `~/.ssh` y sin ninguna
+  credencial: `npm install` y `npm ci` desde ese mismo lockfile instalan el
+  paquete.
 
-Ese `grep` es el punto del paso. El lockfile viejo apunta a
-`ssh://git@github.com/…` porque el atajo `github:owner/repo` hace que npm
-normalice así toda dependencia de GitHub, sin importar cómo esté escrita en el
-`package.json`. Un repo público por `https` se clona sin nada; por `ssh` sale a
-buscar una clave que en CI no existe. Escrita como `git+https`, la entrada del
-lock queda en `https` y no depende de ningún fallback. Si después del `npm
-install` seguís viendo `ssh://` en esa línea, la dependencia quedó escrita con el
-atajo.
+Así que el `package.json` queda como está, con el atajo `github:owner/repo#tag`,
+y el lockfile no se regenera. Mientras el repo fue privado esa forma `ssh` sí era
+la trampa: el `insteadOf` tenía que matchearla a ella y no a la `https`, y quien
+reescribía sólo la `https` volvía a fallar con el mismo error creyendo que ya lo
+había resuelto.
+
+Lo que sí conviene revisar de paso: que el tag al que apunta el sistema sea el
+que se quiere. Actualizarlo es un cambio aparte de esta limpieza —cambia el
+código del copiloto— y va en su propio PR, con typecheck, tests y build.
 
 ### 2.2 Los workflows
 
@@ -120,7 +127,7 @@ falle por cualquier otra cosa.
 Dos líneas y ninguna credencial:
 
 ```json
-"@fa/copilot": "git+https://github.com/filosofia-animal/fa-copilot.git#v0.2.2"
+"@fa/copilot": "github:filosofia-animal/fa-copilot#v0.2.2"
 ```
 
 ```css

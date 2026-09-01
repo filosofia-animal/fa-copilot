@@ -15,10 +15,10 @@ lectura cableado en dos lugares —GitHub Actions y Vercel—, más
 red, y todas rompiendo el CI entero del consumidor: `npm ci` está en todos los
 jobs, así que un PR sin relación con el copiloto tampoco podía mergear.
 
-La dependencia se escribe ahora con la forma `git+https` y no con el atajo
-`github:`, para que la entrada del lockfile quede en `https`: el atajo la
-normaliza a `ssh://git@github.com/…`, que sale a buscar una clave SSH que en CI
-no existe.
+En el consumidor no hay nada que cambiar: ni la dependencia ni el lockfile. npm
+guarda el `resolved` como `git+ssh://git@github.com/…` para toda dependencia de
+GitHub y no hay forma de escribirlo distinto, pero siendo el repo público lo
+resuelve por https igual, sin usar ninguna clave. Sólo se borra el andamiaje.
 
 `docs/migrar-a-publico.md` tiene la limpieza de un consumidor que ya tenía el
 andamiaje puesto, en orden y con qué verificar en cada paso.

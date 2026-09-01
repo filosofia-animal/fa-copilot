@@ -11,14 +11,15 @@ tiene que escribir es el manual.**
 Se instala como dependencia git, apuntando a un tag:
 
 ```json
-"@fa/copilot": "git+https://github.com/filosofia-animal/fa-copilot.git#v0.2.2"
+"@fa/copilot": "github:filosofia-animal/fa-copilot#v0.2.2"
 ```
 
 El repo es público, así que no hace falta ninguna credencial: `npm ci` lo clona
-igual en tu máquina, en CI y en el build de Vercel. Se escribe con la forma
-`git+https` a propósito, y no con el atajo `github:`: el atajo hace que npm
-normalice la dependencia a `ssh://git@github.com/…` en el `package-lock`, y esa
-forma sale a buscar una clave SSH que en CI no existe.
+igual en tu máquina, en CI y en el build de Vercel. Y eso es todo lo que hay que
+escribir — el lockfile no se toca. npm guarda el `resolved` como
+`git+ssh://git@github.com/…` para toda dependencia de GitHub, sin importar cómo
+esté escrita en el `package.json`, y siendo el repo público lo resuelve por https
+igual, sin usar ninguna clave SSH.
 
 Se distribuye como TypeScript sin compilar, así que el consumidor necesita
 `transpilePackages: ["@fa/copilot"]` en su `next.config.ts`.
@@ -77,7 +78,9 @@ todas con el mismo error de git, que parece de red y no dice qué falta:
   URL y el clone falla con "Repository not found" mientras el token figura como
   nunca usado;
 - el `insteadOf` sobre la forma `ssh://`, porque es la que npm deja en el
-  lockfile por más que el `package.json` diga `https`;
+  lockfile por más que el `package.json` diga `https` — reescribir sólo la forma
+  `https` no matcheaba nada y fallaba igual, después de haber "arreglado" el
+  problema;
 - la variable de entorno en Vercel, por proyecto y en los tres entornos.
 
 Nada de eso existe más. Si estás migrando un sistema que todavía tiene ese
