@@ -142,6 +142,13 @@ export type CopilotBlock =
   | { kind: "rate_limit"; message: string }
   | { kind: "budget"; message: string };
 
+/**
+ * Mensajes de historial que viajan del widget al endpoint. No es un límite de
+ * la conversación: el widget manda sólo la cola y el server recorta lo que
+ * sobre, nunca rechaza un hilo por largo.
+ */
+export const COPILOT_HISTORY_MAX = 20;
+
 export const COPILOT_DEFAULTS = {
   model: "claude-sonnet-4-6",
   maxTokens: 2000,

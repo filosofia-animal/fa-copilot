@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { COPILOT_HISTORY_MAX } from "../types";
 
 /**
  * Enmascara los parámetros dinámicos de una ruta antes de mandarla al modelo.
@@ -37,7 +38,15 @@ export const copilotChatRequestSchema = z.object({
     .max(500, "La pregunta no puede superar los 500 caracteres"),
   conversationId: z.string().uuid().nullish(),
   route: z.string().max(200).nullish(),
-  history: z.array(copilotMessageSchema).max(20).default([]),
+  // Se recorta antes de validar: rechazar por largo trababa el hilo a partir de
+  // la pregunta 12, y el historial que manda el cliente es sólo un respaldo del
+  // guardado.
+  history: z
+    .preprocess(
+      (value) => (Array.isArray(value) ? value.slice(-COPILOT_HISTORY_MAX) : value),
+      z.array(copilotMessageSchema)
+    )
+    .default([]),
 });
 
 export const copilotFeedbackSchema = z.object({

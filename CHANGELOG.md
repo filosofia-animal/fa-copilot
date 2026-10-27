@@ -6,6 +6,15 @@ de otro sistema sin que alguien lo decida.
 
 ## Sin publicar
 
+Una conversación larga ya no se traba. El widget mandaba el hilo entero con cada
+pregunta y el endpoint rechazaba el pedido si traía más de 20 mensajes, así que
+la pregunta 12 de un mismo hilo cortaba con "Too big: expected array to have
+<=20 items" —el mensaje crudo de zod, en inglés—. Y el hilo quedaba trabado: la
+pregunta fallida se quedaba en pantalla y cada reintento sumaba un mensaje más.
+Ahora el widget manda sólo los últimos 20 y el server recorta en vez de
+rechazar. El tope nunca protegía nada: el server prefiere el historial guardado
+y al modelo le reenvía sólo los últimos `historyLimit`.
+
 El repo pasa a ser **público**. No cambia una línea de código; cambia lo que
 cuesta consumirlo. Mientras fue privado, quien clonaba el paquete era npm, con la
 URL del lockfile y por su cuenta, así que cada sistema necesitaba un token de
