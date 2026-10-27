@@ -56,6 +56,29 @@ describe("copilotChatRequestSchema", () => {
     });
     expect(parsed.success).toBe(false);
   });
+
+  /**
+   * El widget manda la conversación entera con cada pregunta. Con un tope que
+   * rechaza, la pregunta 12 de un mismo hilo cortaba con "Too big: expected
+   * array to have <=20 items" y el hilo quedaba trabado: cada reintento sumaba
+   * un mensaje más.
+   */
+  it("acepta una conversación larga y se queda con la cola del historial", () => {
+    const history = Array.from({ length: 30 }, (_, i) => ({
+      role: i % 2 === 0 ? "user" : "assistant",
+      content: `mensaje ${i}`,
+    }));
+    const parsed = copilotChatRequestSchema.safeParse({ question: "hola", history });
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.history).toHaveLength(20);
+    expect(parsed.data?.history[0]?.content).toBe("mensaje 10");
+    expect(parsed.data?.history.at(-1)?.content).toBe("mensaje 29");
+  });
+
+  it("sin historial, arranca vacío", () => {
+    const parsed = copilotChatRequestSchema.safeParse({ question: "hola" });
+    expect(parsed.data?.history).toEqual([]);
+  });
 });
 
 describe("looksLikeRefusal", () => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { COPILOT_HISTORY_MAX } from "../types";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -52,7 +53,9 @@ export function useCopilotChat({ endpoint, pathname }: UseCopilotChatOptions) {
       setLookingUp(null);
       setIsStreaming(true);
 
-      const history = messages.map(({ role, content }) => ({ role, content }));
+      const history = messages
+        .slice(-COPILOT_HISTORY_MAX)
+        .map(({ role, content }) => ({ role, content }));
 
       setMessages((prev) => [
         ...prev,
